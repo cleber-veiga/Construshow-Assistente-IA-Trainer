@@ -1,0 +1,42 @@
+model:
+  dense_units: 256
+  dropout_rate: 0.4
+  embedding_dim: 64
+  max_length: 50
+  num_classes: 1
+  vocab_size: 136
+model_intention:
+  dense_units: 64
+  dropout_rate: 0.3
+  embedding_dim: 128
+  max_length: 50
+  num_classes: 10
+  vocab_size: 10000
+  filters: 64
+  kernel_size: 5
+  lstm_units: 32
+  recurrent_dropout: 0.2
+  learning_rate: 0.001
+  num_intentions: 5
+  num_objects: 10
+  num_entities: 11
+model_relationship:
+  embedding_dim: 64
+  vocab_size: 10000
+  output_dim: 32
+  input_length: 6
+  learning_rate: 0.001
+processing:
+  cleaning:
+    lowercase: true
+    remove_accents_and_special_characters: true
+    remove_punctuation: true
+  max_length: 50
+  target_samples: 100
+  vocab_size: 3000
+  max_variations: 5
+training:
+  batch_size: 8
+  early_stopping_patience: 2
+  epochs: 5
+  validation_split: 0.2

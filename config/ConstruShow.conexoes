@@ -1,0 +1,22 @@
+[ConstruShowX]
+Server=192.168.90.122:1521:ORCL2
+Username=VIASOFTMCP
+Password=VIASOFTMCP
+ProviderName=Oracle
+CharLength=0
+Charset=
+ClientIdentifier=
+ConnectionTimeout=0
+ConnectMode=cmNormal
+DateFormat=
+DateLanguage=
+Direct=true
+EnableIntegers=True
+EnableLargeInt=false
+PrecisionInteger=9
+PrecisionLargeint=19
+PrecisionSmallint=0
+Execute01=ALTER SESSION SET NLS_LANGUAGE = "BRAZILIAN PORTUGUESE"
+Execute02=ALTER SESSION SET NLS_TERRITORY = BRAZIL
+Execute03=ALTER SESSION SET NLS_DATE_FORMAT = 'MM/DD/YYYY'
+Execute04=ALTER SESSION SET NLS_NUMERIC_CHARACTERS = '.,'

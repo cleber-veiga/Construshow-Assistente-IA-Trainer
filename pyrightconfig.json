@@ -1,0 +1,11 @@
+{
+    "ignore": ["tensorflow", "tensorflow.*"],
+    "reportMissingImports": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownArgumentType": false,
+    "reportUnknownVariableType": false,
+    "reportGeneralTypeIssues": false,
+    "reportOptionalMemberAccess": false,
+    "pythonVersion": "3.8",
+    "typeCheckingMode": "off"
+}

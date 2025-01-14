@@ -1,0 +1,120 @@
+CAMADAS DO PROJETO
+
+
+1 - LIMPEZA DO TEXTO (Classe TextCleaner)
+	- Deixa tudo em minúsculo
+	- Retira pontuações (.,-?"...)
+	- Substitui caracteres especiais (ç,á,í...)
+	- Substitui sinônimos por palavras do vocabulário definido ("aquisicao" troca por "compra")
+	
+2 - IDENTIFICAÇÃO DE ENTIDADES E INTENÇÃO E O OBJETO PRINCIAL DA PERGUNTA
+	- Rede neural que identifica as entidades e a intenção contida em uma mensagem, esse modelo é treinado com perguntas e entidades definidas, exemplo de dataset:
+	
+	| question                                                                                    | intention              | object  | entities                           |
+    |---------------------------------------------------------------------------------------------|------------------------|---------| -----------------------------------|
+    | Qual o limite de crédito do cliente                                                         | BUSCAR_DADO            | cliente | ['cliente,'limite_credito']        |
+    | Quais produtos o cliente mais comprou                                                       | BUSCAR_DADO            | cliente | ['cliente,'produto','compra']      |
+    | Necessito saber o valor exato do limite de crédito que ainda não foi utilizado              | BUSCAR_DISPONIBILIDADE | cliente | ['limite_credito,]                 |
+    | Qual o limite de crédito da pessoa                                                          | BUSCAR_DADO            | cliente | ['cliente,'limite_credito']        |
+    | O cliente possui algum histórico recente de pagamentos atrasados ou pendências financeiras? | BUSCAR_DADO            | cliente | ['cliente,'historico','pagamento'] | 
+	
+	Saída esperada
+	{
+		"intention": "BUSCAR_DADO",
+		"object": "cliente",
+		"entities": ['cliente,'historico','pagamento']
+	
+	}
+	
+3 - IDENTIFICAR A RELAÇÃO ENTRE AS ENTIDADES IDENTIFICADAS
+	- Rede neural para identificar a relação entre entidades , por exemplo na pergunta "Qual é o histórico de compras do cliente" terá o retorno das seguinte informações da rede neural anterior:
+		['historico','cliente','compra']
+	  a rede neural com base no que for treinada deve retornar o relacionamento dessas entidades como histórico pertence a compra e compra pertence a cliente. A base de dados de treinamento sera assim:
+	  
+	  | entity    | weigth | parent    |
+	  |-----------|--------|-----------|
+	  | cliente   | 0      |           |
+	  | compra    | 1      | cliente   |
+	  | compra    | 1      | produto   |
+	  | historico | 2      | compra    |
+	  | produto   | 0      |           |
+	  | devolucao | 1      | cliente   |
+	  | devolucao | 1      | produto   |
+	  | historico | 2      | devolucao |
+	  
+	  onde:
+		weigth = 0 -> Entidade Independentes
+		weigth = 1 -> Entidades dependentes e que possuem filhos
+		weigth = 2 -> Entidades dependentes e que não possuem filhos
+		
+	A rede neural deve receber a lista de entidades recebidas da rede anterior por exemplo ['historico','cliente','compra'] e retornar as cadeias de relacionamento existentes para cada entidade listada com o maior weigth. Por exemplo:
+	
+	Recebeu: ['historico','cliente','compra']
+	Saída:
+		{
+			historico = {
+							"weigth": 1,
+							"entity": 'compra',
+							"parent": {
+										"weigth": 0,
+										"entity": 'cliente',
+										"parent": {}
+									  },
+									  {
+										"weigth": 0,
+										"entity": 'produto',
+										"parent": {}
+									  },
+									  
+						},
+						{
+							"weigth": 1,
+							"entity": 'devolucao',
+							"parent": {
+										"weigth": 0,
+										"entity": 'cliente',
+										"parent": {}
+									  },
+									  {
+										"weigth": 0,
+										"entity": 'produto',
+										"parent": {}
+									  },
+									  
+						}
+		}
+	
+		
+		Agora com isso podemos identificar a relação das entidades identificadas com o maior peso na mensagem e confrontar com suas relações, então aqui iremos percorrer todas as entidades retornadas com maior peso e verificar se existe relação na pergunta, por exemplo
+		
+		Percorre o retorno da RN -> (hitorico)
+				variável de atribuição = historico
+				Quais suas dependencias? -> compra e devolução
+				Existe suas dependências na lista de entidades identificadas na mensagem e se sim se mais do que uma? -> ['historico','cliente','compra']
+					SIM -> Usa a entidade -> "compra" e analisa: a entidade "compra" é dependente?
+					variável de atribuição = historico_compra
+											SIM -> Quais suas dependencias? -> cliente e produto
+													Existe suas dependências na lista de entidades identificadas na mensagem? -> ['historico','cliente','compra']
+														SIM -> Usa a entidade -> "cliente" e analisa: a entidade "cliente" é dependente?
+															variável de atribuição = historico_compra_cliente														
+															NÃO -> FIM
+															
+														NÃO -> Retorna informando que há mais de uma dependência em compra que não está explícita na pergunta, exemplo de retorno:
+																{
+																	"entity": compra,
+																	"weigth": 1
+																	"entities": ['cliente','produto']
+																}
+						
+											NÂO -> FIM
+					NÃO -> Retorna informando que há mais de uma dependência em histórico que não está explícita na pergunta, exemplo de retorno:
+							{
+								"entity": historico,
+								"weigth": 0
+								"entities": ['compra','devolucao']
+							}
+	
+		Com esse retorno, será possível saber o caminho onde deve direcionar a pergunta para adquação contextual das perguntas, sendo cliente/compra as entidades de peso máximo são ignoradas
+	
+	
+
