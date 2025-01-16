@@ -9,6 +9,8 @@ from app.core.trainer.trainer import ModelTrainer
 from config import conf_model
 from app.database.processing import loads_questions
 from app.core.data.balancing import performing_data_balancing
+
+
 class TrainingPipeline:
     def __init__(self):
         self.tokenizer = None

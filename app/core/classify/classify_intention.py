@@ -2,7 +2,6 @@ import pickle
 import numpy as np
 from tensorflow.keras.models import load_model
 from app.core.data.cleaner import TextCleaner
-from app.core.data.tokenizer import TokenizerWrapperIntention
 
 
 def classifier_intention(message, config):
@@ -29,23 +28,31 @@ def classifier_intention(message, config):
         # Intenção
         intention_prediction_index = np.argmax(predictions[0])  # Predição de 'intention'
         intention_prediction = intention_encoder.inverse_transform([intention_prediction_index])[0]
+        intention_confidence = np.max(predictions[0])  # Confiança da predição de intenção
 
         # Objeto
         object_prediction_index = np.argmax(predictions[1])  # Predição de 'object'
         object_prediction = object_encoder.inverse_transform([object_prediction_index])[0]
+        object_confidence = np.max(predictions[1])  # Confiança da predição de objeto
 
         # Entidades
         entities_prediction = [
             entity.replace('"', '').replace("'", "").strip().strip('[').strip(']')
             for entity, prob in zip(mlb.classes_, predictions[2][0])
-            if prob >= 0.6  # Limiar de confiança
+            if prob >= 0.99999  # Limiar de confiança
         ]
+        entities_confidence = [
+            float(prob) for prob in predictions[2][0] if prob >= 0.99999
+        ]  # Confiança das entidades
 
         return {
             "message": message,
             "intention": intention_prediction,
+            "intention_confidence": float(intention_confidence),  # Confiança da intenção
             "object": object_prediction,
+            "object_confidence": float(object_confidence),  # Confiança do objeto
             "entities": entities_prediction,
+            "entities_confidence": entities_confidence,  # Confiança das entidades
         }
 
     except Exception as e:

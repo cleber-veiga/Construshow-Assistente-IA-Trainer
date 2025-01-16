@@ -63,7 +63,8 @@ def loads_entity_relationship_training() -> pd.DataFrame:
         SELECT
             e.translation as entity,
             w.weight as weight,
-            p.translation as parent
+            p.translation as parent,
+            e.word as word
         FROM relations r
         LEFT JOIN entities e ON r.entity_id = e.id
         LEFT JOIN weights w on r.weight_id = w.id
@@ -76,7 +77,31 @@ def loads_entity_relationship_training() -> pd.DataFrame:
         if not result:
             return pd.DataFrame({"error": ["Nenhum resultado encontrado"]})
         
-        df = pd.DataFrame(result, columns=["entity", "weight","parent"])
+        df = pd.DataFrame(result, columns=["entity", "weight","parent","word"])
+        return df
+        
+    except Exception as e:
+        db.session.rollback()
+        return pd.DataFrame({"error": [str(e)]})
+
+    finally:
+        db.session.close()
+
+def loads_entity_origins() -> pd.DataFrame:
+    query = text("""
+        SELECT
+            e.entity as entity,
+            e.translation as translation
+        FROM entities e 
+    """)
+
+    try:
+        result = db.session.execute(query).fetchall()
+        
+        if not result:
+            return pd.DataFrame({"error": ["Nenhum resultado encontrado"]})
+        
+        df = pd.DataFrame(result, columns=["entity", "translation"])
         return df
         
     except Exception as e:
