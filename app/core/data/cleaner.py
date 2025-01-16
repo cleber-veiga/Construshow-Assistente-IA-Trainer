@@ -2,6 +2,7 @@ from app.database.processing import loads_word_replacements
 from typing import Dict
 import unicodedata
 import re
+import pickle
 
 class TextCleaner:
     def __init__(self, config: Dict):
@@ -48,3 +49,10 @@ class TextCleaner:
         word_replacements = {**self.word_replacements_default,**self.word_replacements_database}
         words = text.split()
         return ' '.join(word_replacements.get(word, word) for word in words)
+    
+    def generate_word_replacements(self):
+        word_replacements = {**self.word_replacements_default,**self.word_replacements_database}
+
+        if len(word_replacements) > 0:
+            with open("mod/app/models/saved/word_replacements.pkl", "wb") as f:
+                pickle.dump(word_replacements, f)

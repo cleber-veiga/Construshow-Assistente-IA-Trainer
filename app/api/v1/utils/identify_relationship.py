@@ -1,3 +1,4 @@
+import pickle
 import pandas as pd
 from app.database.processing import loads_entity_relationship_training,loads_entity_origins
 
@@ -76,3 +77,11 @@ class ClassifyRelationship:
             }
 
         return result
+    def generate_entity_relationship(self):
+        if len(self.df) > 0:
+            with open("mod/app/models/saved/entity_relationship.pkl", "wb") as f:
+                pickle.dump(self.df, f)
+        
+        if len(self.translation_df) > 0:
+            with open("mod/app/models/saved/entity_translation.pkl", "wb") as f:
+                pickle.dump(self.translation_df, f)

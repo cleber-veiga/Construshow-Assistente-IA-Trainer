@@ -6,9 +6,27 @@ from flask_restful import Resource
 from app.core.classify.classify import classifier
 from app.core.trainer.train_intention import TrainingIntentionPipeline
 from app.core.classify.classify_intention import classifier_intention
+from app.core.trainer.training import TrainingIntentionManangerPipeline, TrainingManangerPipeline
 from config import conf_model
 from app.core.trainer.train import TrainingPipeline
 from app.api.v1.utils.split import split_message,remove_duplicate_dicts
+
+class ChatTrainerManager(Resource):
+    def get(self):
+        
+        """ Treinamento do modelo de Intenções"""
+        pipeline_intention = TrainingIntentionManangerPipeline()
+        pipeline_intention.run()
+
+        """ Treinamento do modelo de classificação"""
+        pipeline_main = TrainingManangerPipeline()
+        pipeline_main.run()
+
+        """ Gera os arquivos de relacionamento das entidades"""
+        pipeline_relationship = ClassifyRelationship(['training'])
+        pipeline_relationship.generate_entity_relationship()
+        
+        return {"message": "Treinamento concluído!"}
 
 class ChatTrainerIntentionResource(Resource):
     def get(self):
@@ -77,6 +95,9 @@ class ChatTrainerResource(Resource):
 
             training = TrainingPipeline()
             training.run(object)
+
+            classify_relation = ClassifyRelationship(['training'])
+            classify_relation.generate_entity_relationship()
 
             response = make_response(jsonify(object), 200) 
             response.headers["Content-Type"] = "application/json"

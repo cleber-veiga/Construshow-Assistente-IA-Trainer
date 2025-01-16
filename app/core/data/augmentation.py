@@ -28,24 +28,24 @@ class DataAugmenterIntention:
             "{} é o que eu quero saber"
         ]
 
-    def generate_variations(self, questions: List[Tuple[str, str, str, List[str]]]) -> List[Tuple[str, str, str, List[str]]]:
+    def generate_variations(self, questions: List[Tuple[str, str]]) -> List[Tuple[str, str, str]]:
         variations = []
-        for question, intention, object_, entities in questions:
+        for question, intention in questions:
             question = question.rstrip('?.,!')
             for template in self.templates:
                 new_question = template.format(question)
                 if not new_question.endswith('?'):
                     new_question += '?'
-                variations.append((new_question, intention, object_, entities))
+                variations.append((new_question, intention))
         return variations
 
     def expand_dataset(self, df: pd.DataFrame) -> pd.DataFrame:
         # Extrai as colunas relevantes
-        questions = list(zip(df['question'], df['intention'], df['object'], df['entities']))
+        questions = list(zip(df['question'], df['intention']))
         # Gera as variações
         variations = self.generate_variations(questions)
         # Cria um novo DataFrame com as variações
-        return pd.DataFrame(variations, columns=['question', 'intention', 'object', 'entities'])
+        return pd.DataFrame(variations, columns=['question', 'intention'])
     
 class DataAugmenter:
     def __init__(self, templates: List[str] = None, max_variations_per_question: int = None):

@@ -40,6 +40,7 @@ class TrainingPipeline:
             cleaner = TextCleaner(self.config['processing']['cleaning'])
             expanded_df['question'] = expanded_df['question'].apply(cleaner.clean_text)
             
+            cleaner.generate_word_replacements()
         return df_intention, df_address,expanded_df
 
     def encode_training_data(self, df, domain_address):

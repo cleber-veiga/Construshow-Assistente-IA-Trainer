@@ -152,3 +152,40 @@ def loads_questions(object: str) -> pd.DataFrame:
     except Exception as e:
         db.session.rollback()
         return {"error": str(e)}
+
+def loads_questions_all() -> pd.DataFrame:
+    query = text("""
+        SELECT
+            q.question as question,
+            i.intention as intention,
+            q.domain_address as domain_address,
+            q.domain_name as domain_name
+        FROM questions q
+        LEFT JOIN intentions i ON q.intention_id = i.id
+        LEFT JOIN objects o ON q.object_id = o.id
+        WHERE (0 = 0)
+    """)
+
+    try:
+        # Executando a consulta
+        result = db.session.execute(query).fetchall()
+
+        # Verificando se há resultados
+        if not result:
+            return {"error": "Nenhum resultado encontrado"}
+
+        # Convertendo os resultados para um DataFrame
+        df = pd.DataFrame(
+                result, 
+                columns=[
+                    "question", 
+                    "intention",
+                    "domain_address",
+                    "domain_name"
+                ]
+            )
+        return df
+
+    except Exception as e:
+        db.session.rollback()
+        return {"error": str(e)}
